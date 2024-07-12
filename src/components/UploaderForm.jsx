@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { toast } from 'react-toastify';
 import CreatableSelect from 'react-select/creatable';
 
@@ -12,13 +13,15 @@ const ImageUploadForm = () => {
 
     const [availableTags,setAvailableTags] = useState([])
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
+    const onDrop = useCallback((acceptedFiles) => {
+        const file = acceptedFiles[0];
         if (file) {
             setImage(URL.createObjectURL(file));
             setImageFile(file);
         }
-    };
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: 'image/*' });
 
     const handleRemoveImage = () => {
         setImage(null);
@@ -31,7 +34,6 @@ const ImageUploadForm = () => {
         fetch('https://utility.caclouddesk.com/infographics/tags')
         .then((response) => response.json())
         .then((data) => {
-            console.log(data.map((tag) => ({ value: tag, label: tag })))
             setAvailableTags(data.map((tag) => ({ value: tag, label: tag })));
         })
         .catch((error) => {
@@ -53,8 +55,7 @@ const ImageUploadForm = () => {
             body: formData,
         })
         .then((response) => response.json())
-        .then((data) => {
-            console.log(data);
+        .then(() => {
             toast.success('Infographic uploaded successfully');
             setImage(null);
             setTitle('');
@@ -75,20 +76,18 @@ const ImageUploadForm = () => {
             <form onSubmit={handleSubmit} className="flex justify-center items-center max-h-[90vh]">
                 <div className='w-1/2'>
                     <div className="flex flex-col space-y-2">
-                        <label className="text-xl font-medium ml-10 uppercase text-[#31AACC]">Upload Infographics </label>
+                        <label className="text-xl font-medium ml-10 uppercase text-[#31AACC]">Upload Infographics</label>
                         {!image ? (
-                            <div className="border-dashed border-2 h-96 m-10 flex flex-col justify-center items-center border-gray-300 rounded-md p-4 cursor-pointer">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    name='image'
-                                    onChange={handleImageChange}
-                                    className="hidden"
-                                    id="imageUpload"
-                                />
-                                <label htmlFor="imageUpload" className="block text-center bg-cyan-600 text-white p-5 rounded-3xl">
-                                    Drag & drop or click to upload
-                                </label>
+                            <div
+                                {...getRootProps()}
+                                className="border-dashed border-2 h-96 m-10 flex flex-col justify-center items-center border-gray-300 rounded-md p-4 cursor-pointer"
+                            >
+                                <input {...getInputProps()} />
+                                {isDragActive ? (
+                                    <p className="text-gray-800 p-5 rounded-3xl">Drop the files here...</p>
+                                ) : (
+                                    <p className="text-gray-800 p-5 rounded-3xl">Drag & drop or click to upload</p>
+                                )}
                             </div>
                         ) : (
                             <div className="relative m-auto">
