@@ -1,0 +1,219 @@
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+
+const Infographics = () => {
+    const [infographics, setInfographics] = useState([]);
+    const [editingInfographic, setEditingInfographic] = useState(null);
+    const [formData, setFormData] = useState({ title: '', description: '', tags: '' });
+    const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+
+    useEffect(() => {
+        fetchInfographics();
+    }, []);
+
+    const fetchInfographics = async () => {
+        try {
+            const response = await fetch('https://utility.caclouddesk.com/infographics/all');
+            const data = await response.json();
+            setInfographics(data);
+        } catch (error) {
+            console.error('Error fetching infographics:', error);
+        }
+    };
+
+    const handleEdit = (infographic) => {
+        setEditingInfographic(infographic);
+        setFormData({ title: infographic.title, description: infographic.description, tags: infographic.tags });
+        setImagePreview(`https://utility.caclouddesk.com/uploads/${infographic.image}`);
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            const response = await fetch(`https://utility.caclouddesk.com/infographics/${id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                toast.success('Infographic deleted successfully');
+            }
+            fetchInfographics();
+        } catch (error) {
+            console.error('Error deleting infographic:', error);
+        }
+    };
+
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+        const formDataToSend = new FormData();
+        formDataToSend.append('title', formData.title);
+        formDataToSend.append('description', formData.description);
+        formDataToSend.append('tags', formData.tags);
+        if (image) {
+            formDataToSend.append('image', image);
+        }
+
+        try {
+            await fetch(`https://utility.caclouddesk.com/infographics/${editingInfographic._id}`, {
+                method: 'PUT',
+                body: formDataToSend,
+            });
+            setEditingInfographic(null);
+            toast.success('Infographic updated successfully');
+            setFormData({ title: '', description: '', tags: '' });
+            setImage(null);
+            setImagePreview(null);
+            fetchInfographics();
+        } catch (error) {
+            console.error('Error updating infographic:', error);
+        }
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImage(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setImage(null);
+        setImagePreview(null);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            setImage(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    return (
+        <div className="container m-auto py-5 bg-white rounded-md w-[97%] shadow-2xl ">
+            <h1 className="text-2xl font-bold mb-4 text-center text-[#31AACC]">Infographics</h1>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mx-12 w-11/12">
+                {infographics.map((infographic) => (
+                    <div key={infographic._id} className="p-4 border rounded-md shadow-md">
+                        <img src={`https://utility.caclouddesk.com/uploads/${infographic.image}`} alt={infographic.title} className="h-48 m-auto mb-2 object-contain" />
+                        <h2 className="text-xl font-semibold">{infographic.title}</h2>
+                        <p>{infographic.description}</p>
+                        <p className="text-sm text-gray-600">{infographic.tags}</p>
+                        <div className="flex space-x-2 mt-2">
+                            <button onClick={() => handleEdit(infographic)} className="px-4 py-2 bg-[#31AACC] text-white rounded-md">Edit</button>
+                            <button onClick={() => handleDelete(infographic._id)} className="px-4 py-2 bg-red-500 text-white rounded-md">Delete</button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {editingInfographic && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-4 rounded-md shadow-md">
+                        <h2 className="text-xl font-bold mb-4">Edit Infographic</h2>
+                        <form onSubmit={handleUpdate} className="flex space-y-4">
+                            <div className='w-1/2 flex flex-col justify-around '>
+                                <div className="flex flex-col space-y-2">
+                                    <label htmlFor="title" className="text-sm font-medium">Title</label>
+                                    <input
+                                        type="text"
+                                        id="title"
+                                        className="border rounded-md p-2"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col space-y-2">
+                                    <label htmlFor="description" className="text-sm font-medium">Description</label>
+                                    <textarea
+                                        id="description"
+                                        className="border rounded-md p-2"
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col space-y-2">
+                                    <label htmlFor="tags" className="text-sm font-medium">Tags</label>
+                                    <input
+                                        type="text"
+                                        id="tags"
+                                        className="border rounded-md p-2"
+                                        value={formData.tags}
+                                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-blue-500 text-white p-2 rounded-md"
+                                >
+                                    Update
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingInfographic(null)}
+                                    className="w-full bg-gray-500 text-white p-2 rounded-md mt-2"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                            <div>
+
+
+                                <div className="flex flex-col space-y-2">
+                                    <label className="text-sm font-medium text-center">Upload Image</label>
+                                    <div
+                                        onDrop={handleDrop}
+                                        onDragOver={handleDragOver}
+                                        className="border-dashed border-2 h-96 m-10 flex flex-col justify-center items-center border-gray-300 rounded-md p-4 cursor-pointer"
+                                    >
+                                        {!imagePreview ? (
+                                            <div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    name='image'
+                                                    onChange={handleImageChange}
+                                                    className="hidden"
+                                                    id="imageUpload"
+                                                />
+                                                <label htmlFor="imageUpload" className="block text-center">
+                                                    Drag & drop or click to upload
+                                                </label>
+                                            </div>
+                                        ) : (
+                                            <div className="relative m-auto">
+                                                <img src={imagePreview} alt="Preview" className=" rounded-md" />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemoveImage}
+                                                    className="font-bold w-full my-3 bg-blue-500 text-white p-1 rounded-full"
+                                                >
+                                                    Remove Image
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default Infographics;
