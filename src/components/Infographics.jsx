@@ -1,17 +1,32 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import CreatableSelect from 'react-select/creatable';
 
 const Infographics = () => {
     const [infographics, setInfographics] = useState([]);
     const [editingInfographic, setEditingInfographic] = useState(null);
-    const [formData, setFormData] = useState({ title: '', description: '', tags: '' });
+    const [formData, setFormData] = useState({ title: '', description: '', tags: [] });
     const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
-
+    const [tags, setTags] = useState([]);
+    const [availableTags, setAvailableTags] = useState([])
     useEffect(() => {
         fetchInfographics();
+        fetch('https://utility.caclouddesk.com/infographics/tags')
+            .then((response) => response.json())
+            .then((data) => {
+                setAvailableTags(data.map((tag) => ({ value: tag, label: tag })));
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     }, []);
 
+    const handleTagsChange = (newValue) => {
+        setTags(newValue);
+        console.log(newValue)
+        setFormData({ ...formData, tags: newValue.map((tag) => tag.value )});
+    };
     const fetchInfographics = async () => {
         try {
             const response = await fetch('https://utility.caclouddesk.com/infographics/all');
@@ -44,29 +59,39 @@ const Infographics = () => {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
-        const formDataToSend = new FormData();
-        formDataToSend.append('title', formData.title);
-        formDataToSend.append('description', formData.description);
-        formDataToSend.append('tags', formData.tags);
-        if (image) {
-            formDataToSend.append('image', image);
-        }
-
+        const raw = JSON.stringify({
+            "title": formData.title,
+            "description": formData.description,
+            "tags": formData.tags,
+          });
         try {
-            await fetch(`https://utility.caclouddesk.com/infographics/${editingInfographic._id}`, {
-                method: 'PUT',
-                body: formDataToSend,
+            const response = await fetch(`https://utility.caclouddesk.com/${editingInfographic._id}`, {
+                method: 'PATCH', // Use PUT or PATCH for updating
+                body: raw,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
+    
+            // Check if the response is OK (status 200-299)
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+    
+            const data = await response.json();
+            console.log(data);
             setEditingInfographic(null);
             toast.success('Infographic updated successfully');
-            setFormData({ title: '', description: '', tags: '' });
+            setFormData({ title: '', description: '', tags: [] });
             setImage(null);
             setImagePreview(null);
             fetchInfographics();
         } catch (error) {
             console.error('Error updating infographic:', error);
+            toast.error('Failed to update infographic');
         }
     };
+    
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -145,13 +170,13 @@ const Infographics = () => {
 
                                 <div className="flex flex-col space-y-2">
                                     <label htmlFor="tags" className="text-sm font-medium">Tags</label>
-                                    <input
-                                        type="text"
-                                        id="tags"
+                                    <CreatableSelect
+                                        isMulti
+                                        options={availableTags || []}
+                                        value={formData.tags.map((tag) => ({ value: tag, label: tag }))}
+                                        onChange={handleTagsChange}
                                         className="border rounded-md p-2"
-                                        value={formData.tags}
-                                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                        required
+                                        name='tags'
                                     />
                                 </div>
                                 <button
@@ -193,8 +218,8 @@ const Infographics = () => {
                                                 </label>
                                             </div>
                                         ) : (
-                                            <div className="relative m-auto">
-                                                <img src={imagePreview} alt="Preview" className=" rounded-md" />
+                                            <div className="m-auto overflow-hidden">
+                                                <img src={imagePreview} alt="Preview" className="h-full object-cover rounded-md" />
                                                 <button
                                                     type="button"
                                                     onClick={handleRemoveImage}
