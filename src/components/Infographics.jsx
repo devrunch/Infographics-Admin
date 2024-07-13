@@ -66,7 +66,7 @@ const Infographics = () => {
           });
         try {
             const response = await fetch(`https://utility.caclouddesk.com/infographics/${editingInfographic._id}`, {
-                method: 'PATCH', // Use PUT or PATCH for updating
+                method: 'POST', // Use PUT or PATCH for updating
                 body: raw,
                 headers: {
                     'Content-Type': 'application/json',
