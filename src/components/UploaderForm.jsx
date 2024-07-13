@@ -74,8 +74,8 @@ const ImageUploadForm = () => {
     return (
         <div className="m-6 p-4 bg-white rounded-md shadow-md">
             <form onSubmit={handleSubmit} className="flex justify-center items-center max-h-[90vh]">
-                <div className='w-1/2'>
-                    <div className="flex flex-col space-y-2">
+                <div className='w-1/2 overflow-hidden'>
+                    <div className="flex flex-col space-y-2 o">
                         <label className="text-xl font-medium ml-10 uppercase text-[#31AACC]">Upload Infographics</label>
                         {!image ? (
                             <div
@@ -90,8 +90,8 @@ const ImageUploadForm = () => {
                                 )}
                             </div>
                         ) : (
-                            <div className="relative m-auto">
-                                <img src={image} alt="Preview" className="w-96 rounded-md" />
+                            <div className="relative m-auto h-full">
+                                <img src={image} alt="Preview" className=" h-96 rounded-md" />
                                 <button
                                     type="button"
                                     onClick={handleRemoveImage}
