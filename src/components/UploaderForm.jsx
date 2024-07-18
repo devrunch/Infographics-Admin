@@ -50,7 +50,7 @@ const ImageUploadForm = () => {
         formData.append('description', description);
         formData.append('tags', tags.map(tag => tag.value).join(','));
 
-        fetch('https://utility.caclouddesk.com/infographics/upload', {
+        fetch('http://localhost:3000/infographics/upload', {
             method: 'POST',
             body: formData,
         })
@@ -130,7 +130,7 @@ const ImageUploadForm = () => {
                     </div>
 
                     <div className="flex flex-col space-y-2">
-                        <label htmlFor="tags" className="text-sm font-medium">Tags</label>
+                        <label htmlFor="tags" className="text-sm font-medium">Categories</label>
                         <CreatableSelect
                             isMulti
                             options={availableTags || []}

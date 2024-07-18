@@ -10,6 +10,9 @@ const Infographics = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const [tags, setTags] = useState([]);
     const [availableTags, setAvailableTags] = useState([])
+    const [searchParams, setSearchParams] = useState({ description: '', tag: '', page: 1 });
+    const [searchTags, setSearchTags] = useState([]);
+    const [totalPages, setTotalPages] = useState(1);
     useEffect(() => {
         fetchInfographics();
         fetch('https://utility.caclouddesk.com/infographics/tags')
@@ -29,9 +32,11 @@ const Infographics = () => {
     };
     const fetchInfographics = async () => {
         try {
-            const response = await fetch('https://utility.caclouddesk.com/infographics/all');
+            const { description, tag, page } = searchParams;
+            const response = await fetch(`https://utility.caclouddesk.com/infographics/search?description=${description}&tag=${tag}&page=${page}&limit=10`);
             const data = await response.json();
-            setInfographics(data);
+            setInfographics(data.infographics);
+            setTotalPages(data.totalPages);
         } catch (error) {
             console.error('Error fetching infographics:', error);
         }
@@ -120,10 +125,40 @@ const Infographics = () => {
         e.preventDefault();
         e.stopPropagation();
     };
+    const handleSearchChange = (e) => {
+        const { name, value } = e.target;
+        setSearchParams({ ...searchParams, [name]: value, page: 1 });
+    };
+
+    const handlePageChange = (newPage) => {
+        setSearchParams({ ...searchParams, page: newPage });
+    };
 
     return (
         <div className="container m-auto py-5 bg-white rounded-md w-[97%] shadow-2xl ">
             <h1 className="text-2xl font-bold mb-4 text-center text-[#31AACC]">Infographics</h1>
+            <div className="mb-4 mx-12 flex items-center justify-around w-11/12">
+                <input
+                    type="text"
+                    placeholder="Search by description"
+                    name="description"
+                    value={searchParams.description}
+                    onChange={handleSearchChange}
+                    className="border p-2 rounded-md w-5/12 mb-2"
+                />
+                <CreatableSelect
+                    options={[{label:"None",value:""},...availableTags]}
+                    placeholder="Search by tags"
+                    onChange={(selectedTags) => {console.log(selectedTags); setSearchTags(searchTags); handleSearchChange({ target: { name: 'tag', value: selectedTags.value } })}}
+                    className="border rounded-md p-2 w-4/12 mb-2"
+                />
+                <button
+                    onClick={() => fetchInfographics()}
+                    className="w-2/12 bg-blue-500 text-white p-2 rounded-md"
+                >
+                    Search
+                </button>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mx-12 w-11/12">
                 {infographics.map((infographic) => (
                     <div key={infographic._id} className="p-4 border rounded-md shadow-md">
@@ -169,7 +204,7 @@ const Infographics = () => {
                                 </div>
 
                                 <div className="flex flex-col space-y-2">
-                                    <label htmlFor="tags" className="text-sm font-medium">Tags</label>
+                                    <label htmlFor="tags" className="text-sm font-medium">Categories</label>
                                     <CreatableSelect
                                         isMulti
                                         options={availableTags || []}
