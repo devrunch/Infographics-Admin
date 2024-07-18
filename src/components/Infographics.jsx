@@ -35,6 +35,7 @@ const Infographics = () => {
             const { description, tag, page } = searchParams;
             const response = await fetch(`https://utility.caclouddesk.com/infographics/search?description=${description}&tag=${tag}&page=${page}&limit=10`);
             const data = await response.json();
+            // console.log(data.infographics[0].tags)
             setInfographics(data.infographics);
             setTotalPages(data.totalPages);
         } catch (error) {
@@ -161,11 +162,11 @@ const Infographics = () => {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mx-12 w-11/12">
                 {infographics.map((infographic) => (
-                    <div key={infographic._id} className="p-4 border rounded-md shadow-md">
-                        <img src={`https://utility.caclouddesk.com/uploads/${infographic.image}`} alt={infographic.title} className="h-48 m-auto mb-2 object-contain" />
+                    <div key={infographic._id} className="p-4 border rounded-md shadow-md flex flex-col justify-stretch items-start">
+                        <img src={`https://utility.caclouddesk.com/uploads/${infographic.image}`} alt={infographic.title} className="h-48 m-auto mb-2 object-contain justify-self-start" />
                         <h2 className="text-xl font-semibold">{infographic.title}</h2>
                         <p>{infographic.description}</p>
-                        <p className="text-sm text-gray-600">{infographic.tags}</p>
+                        <p className="text-sm text-gray-600 uppercase">{infographic.tags.join(' ')}</p>
                         <div className="flex space-x-2 mt-2">
                             <button onClick={() => handleEdit(infographic)} className="px-4 py-2 bg-[#31AACC] text-white rounded-md">Edit</button>
                             <button onClick={() => handleDelete(infographic._id)} className="px-4 py-2 bg-red-500 text-white rounded-md">Delete</button>
