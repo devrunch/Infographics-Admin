@@ -50,7 +50,7 @@ const ImageUploadForm = () => {
         formData.append('description', description);
         formData.append('tags', tags.map(tag => tag.value).join(','));
 
-        fetch('http://localhost:3000/infographics/upload', {
+        fetch('https://utility.caclouddesk.com/infographics/upload', {
             method: 'POST',
             body: formData,
         })
