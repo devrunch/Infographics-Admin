@@ -15,7 +15,7 @@ const Infographics = () => {
     const [totalPages, setTotalPages] = useState(1);
     useEffect(() => {
         fetchInfographics();
-        fetch('https://utility.caclouddesk.com/infographics/tags')
+        fetch('https://utility.caclouddesk.com/api/infographics/tags')
             .then((response) => response.json())
             .then((data) => {
                 setAvailableTags(data.map((tag) => ({ value: tag, label: tag })));
@@ -33,7 +33,7 @@ const Infographics = () => {
     const fetchInfographics = async () => {
         try {
             const { description, tag, page } = searchParams;
-            const response = await fetch(`https://utility.caclouddesk.com/infographics/search?description=${description}&tag=${tag}&page=${page}&limit=10`);
+            const response = await fetch(`https://utility.caclouddesk.com/api/infographics/search?description=${description}&tag=${tag}&page=${page}&limit=10`);
             const data = await response.json();
             // console.log(data.infographics[0].tags)
             setInfographics(data.infographics);
@@ -51,7 +51,7 @@ const Infographics = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`https://utility.caclouddesk.com/infographics/${id}`, {
+            const response = await fetch(`https://utility.caclouddesk.com/api/infographics/${id}`, {
                 method: 'DELETE',
             });
             if (response.ok) {
@@ -71,7 +71,7 @@ const Infographics = () => {
             "tags": formData.tags,
           });
         try {
-            const response = await fetch(`https://utility.caclouddesk.com/infographics/${editingInfographic._id}`, {
+            const response = await fetch(`https://utility.caclouddesk.com/api/infographics/${editingInfographic._id}`, {
                 method: 'POST', // Use PUT or PATCH for updating
                 body: raw,
                 headers: {

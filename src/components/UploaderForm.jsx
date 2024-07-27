@@ -31,7 +31,7 @@ const ImageUploadForm = () => {
         setTags(newValue);
     };
     useEffect(() => {
-        fetch('https://utility.caclouddesk.com/infographics/tags')
+        fetch('https://utility.caclouddesk.com/api/infographics/tags')
         .then((response) => response.json())
         .then((data) => {
             setAvailableTags(data.map((tag) => ({ value: tag, label: tag })));
@@ -50,7 +50,7 @@ const ImageUploadForm = () => {
         formData.append('description', description);
         formData.append('tags', tags.map(tag => tag.value).join(','));
 
-        fetch('https://utility.caclouddesk.com/infographics/upload', {
+        fetch('https://utility.caclouddesk.com/api/infographics/upload', {
             method: 'POST',
             body: formData,
         })
